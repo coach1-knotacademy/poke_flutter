@@ -34,24 +34,70 @@ const _pokemons = [
   ),
 ];
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List pokemonsFilter = [];
+
+  @override
+  void initState() {
+    super.initState();
+    pokemonsFilter = _pokemons
+        .where((pokemon) => pokemon.name.toLowerCase().contains('pika'))
+        .toList();
+  }
+
+  void filterPokemos(String value) {
+    pokemonsFilter = _pokemons
+        .where((pokemon) => pokemon.name.toLowerCase().contains(value))
+        .toList();
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Pokédex')),
-      body: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        itemCount: _pokemons.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (_, index) {
-          final pokemon = _pokemons[index];
-          return GestureDetector(
-            onTap: () => context.push('/pokemon/${pokemon.id}', extra: pokemon),
-            child: PokemonCard(pokemon: pokemon),
-          );
-        },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Busca un Pokémon...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) => filterPokemos(value),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              itemCount: pokemonsFilter.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.75,
+              ),
+              itemBuilder: (_, index) {
+                final pokemon = pokemonsFilter[index];
+                return GestureDetector(
+                  onTap: () =>
+                      context.push('/pokemon/${pokemon.id}', extra: pokemon),
+                  child: PokemonCard(pokemon: pokemon),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
