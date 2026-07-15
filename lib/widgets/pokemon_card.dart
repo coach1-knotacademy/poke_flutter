@@ -1,30 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:poke_app/models/pokemon.dart';
-import 'package:poke_app/widgets/type_chip.dart';
+import '../models/pokemon.dart';
+import 'type_chip.dart';
 
 class PokemonCard extends StatelessWidget {
-  Pokemon pokemon;
+  final Pokemon pokemon;
+  final bool isFavorite;
+  final VoidCallback onFavoriteTap;
 
-  PokemonCard({super.key, required this.pokemon});
+  const PokemonCard({
+    super.key,
+    required this.pokemon,
+    required this.isFavorite,
+    required this.onFavoriteTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Card(
-      child: Padding(
-        padding: .all(16),
-        child: Column(children: [
-        Image.network(
-              pokemon.imagenUrl,
-              height: 120,
-              width: 120,
+      child: Stack(
+        alignment: .center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.network(pokemon.imagenUrl, height: 120, width: 120),
+                const SizedBox(height: 8),
+                Text(pokemon.name, style: theme.textTheme.titleLarge),
+                const SizedBox(height: 8),
+                TypeChip(type: pokemon.type),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(pokemon.name, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
-            TypeChip(type: pokemon.type),
-      ],),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: IconButton(
+              icon: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : null,
+              ),
+              onPressed: onFavoriteTap,
+            ),
+          ),
+        ],
       ),
     );
   }
