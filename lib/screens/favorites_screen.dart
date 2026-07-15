@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:poke_app/constans/pokemons.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:poke_app/widgets/app_scafold.dart';
 import '../widgets/pokemon_card.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -12,37 +12,37 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  Set<String> _favoriteIds = {};
-  late final SharedPreferences _prefs;
+  AppScaffoldState? _appScaffold;
 
   @override
-  void initState() {
-    super.initState();
-    _loadFavorites(); // same pattern as HomeScreen
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final appScaffold = context.findAncestorStateOfType<AppScaffoldState>();
+
+    if (_appScaffold == appScaffold) return;
+
+    _appScaffold?.removeFavoritesListener(_refreshFavorites);
+    _appScaffold = appScaffold;
+    _appScaffold?.addFavoritesListener(_refreshFavorites);
   }
 
-  Future<void> _loadFavorites() async {
-    _prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _favoriteIds = (_prefs.getStringList('favorites') ?? []).toSet();
-    });
+  void _refreshFavorites() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
-  Future<void> _toggleFavorite(String id) async {
-    setState(() {
-      if (_favoriteIds.contains(id)) {
-        _favoriteIds.remove(id);
-      } else {
-        _favoriteIds.add(id);
-      }
-    });
-    await _prefs.setStringList('favorites', _favoriteIds.toList());
+  @override
+  void dispose() {
+    _appScaffold?.removeFavoritesListener(_refreshFavorites);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final favoriteIds = _appScaffold?.favoriteIds ?? <String>{};
     final favorites = pokemons
-        .where((p) => _favoriteIds.contains(p.id))
+        .where((pokemon) => favoriteIds.contains(pokemon.id))
         .toList();
 
     return Scaffold(
@@ -66,7 +66,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   child: PokemonCard(
                     pokemon: pokemon,
                     isFavorite: true,
-                    onFavoriteTap: () => _toggleFavorite(pokemon.id),
+                    onFavoriteTap: () =>
+                        _appScaffold?.toggleFavorite(pokemon.id),
                   ),
                 );
               },
