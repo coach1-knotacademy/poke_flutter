@@ -63,7 +63,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           }
 
           if (snapshot.hasError) {
-            return ErrorView(onRetry: _retry);
+            return ErrorView(error: snapshot.error, onRetry: _retry);
           }
 
           final favorites = snapshot.data!
@@ -86,8 +86,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             itemBuilder: (_, index) {
               final pokemon = favorites[index];
               return GestureDetector(
-                onTap: () =>
-                    context.push('/pokemon/${pokemon.id}', extra: pokemon),
+                onTap: () => context.push('/pokemon/${pokemon.id}'),
                 child: PokemonCard(
                   pokemon: pokemon,
                   isFavorite: true,

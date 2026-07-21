@@ -17,7 +17,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _service = PokemonService();
   late Future<List<Pokemon>> _pokemonsFuture;
-  
   List<Pokemon> _pokemons = []; // accumulated across pages
   bool _isLoadingMore = false;
 
@@ -44,11 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final more = await _service.fetchPokemons(offset: _pokemons.length);
       setState(() => _pokemons = [..._pokemons, ...more]);
-    } on DioException {
+    } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No pudimos cargar más Pokémon')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
       }
     } finally {
       if (mounted) setState(() => _isLoadingMore = false);
@@ -103,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // 2. ERROR — the Future completed with an exception
           if (snapshot.hasError) {
-            return ErrorView(onRetry: _retry);
+            return ErrorView(error: snapshot.error, onRetry: _retry);
           }
 
           // 3. SUCCESS — paint the accumulated list, not the snapshot,
@@ -143,7 +142,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       sliver: SliverGrid.builder(
-                        
                         itemCount: filtered.length,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -155,10 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemBuilder: (_, index) {
                           final pokemon = filtered[index];
                           return GestureDetector(
-                            onTap: () => context.push(
-                              '/pokemon/${pokemon.id}',
-                              extra: pokemon,
-                            ),
+                            onTap: () => context.push('/pokemon/${pokemon.id}'),
                             child: PokemonCard(
                               pokemon: pokemon,
                               isFavorite: _favoriteIds.contains(pokemon.id),

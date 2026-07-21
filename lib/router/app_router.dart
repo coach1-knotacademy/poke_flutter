@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:poke_app/widgets/app_scafold.dart';
-import '../models/pokemon.dart';
 import '../screens/detail_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/home_screen.dart';
@@ -23,7 +22,6 @@ final appRouter = GoRouter(
                   path: '/pokemon/:id',
                   builder: (context, state) => DetailScreen(
                     id: state.pathParameters['id']!,
-                    pokemon: state.extra as Pokemon?,
                   ),
                 ),
               ],

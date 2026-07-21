@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:poke_app/models/pokemon.dart';
+import 'package:poke_app/models/pokemon_detail.dart';
+
 
 class PokemonService {
   final Dio _dio = Dio(
@@ -16,20 +18,14 @@ class PokemonService {
       queryParameters: {'limit': limit, 'offset': offset},
     );
 
-    final List results = response.data['results'] as List;
-    return results.map((item) {
-      // url: https://pokeapi.co/api/v2/pokemon/25/ → id = '25'
-      final segments = Uri.parse(item['url'] as String).pathSegments;
-      final id = segments[segments.length - 2];
-      final name = item['name'] as String;
+    final results = response.data['results'] as List;
+    return results
+        .map((item) => Pokemon.fromListItem(item as Map<String, dynamic>))
+        .toList();
+  }
 
-      return Pokemon(
-        id: id,
-        name: name[0].toUpperCase() + name.substring(1),
-        type: '', // the list endpoint has no types — they arrive in Session 8
-        imagenUrl:
-            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png',
-      );
-    }).toList();
+  Future<PokemonDetail> fetchPokemonDetail(String id) async {
+    final response = await _dio.get('/pokemon/$id');
+    return PokemonDetail.fromJson(response.data as Map<String, dynamic>);
   }
 }
